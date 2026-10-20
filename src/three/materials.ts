@@ -29,7 +29,7 @@ interface WoodPalette {
 }
 
 const WOOD_PALETTES: Record<FinishId, WoodPalette> = {
-  natural: { early: '#cf9358', late: '#9b5b2c', knot: '#5b3219', rough: 0.6, brushed: 0.15, clearcoat: 0.12 },
+  natural: { early: '#c68b52', late: '#93592b', knot: '#5b3219', rough: 0.6, brushed: 0.15, clearcoat: 0.12 },
   walnut: { early: '#7d4d2c', late: '#4d2a15', knot: '#2a160a', rough: 0.55, brushed: 0.15, clearcoat: 0.15 },
   graphite: { early: '#64625d', late: '#3d3c39', knot: '#252422', rough: 0.68, brushed: 0.35, clearcoat: 0.05 },
   charcoal: { early: '#2f2c29', late: '#181716', knot: '#0d0c0c', rough: 0.7, brushed: 1, clearcoat: 0.25 },
@@ -65,7 +65,7 @@ export function bakeWood(gl: THREE.WebGLRenderer, finish: FinishId): BakedSet {
       uEarly: { value: col(p.early) },
       uLate: { value: col(p.late) },
       uKnot: { value: col(p.knot) },
-      uRings: { value: 70 },
+      uRings: { value: 36 },
       uRough: { value: p.rough },
       uBrushed: { value: p.brushed },
     },
@@ -124,7 +124,7 @@ export function useStaticMaterials() {
       size: [TEX.brushed, TEX.brushed],
       glsl: BRUSHED,
       relief: 0.00004,
-      uniforms: { uBase: { value: col('#d6d7d8') }, uRough: { value: 0.3 } },
+      uniforms: { uBase: { value: col('#d6d7d8') }, uRough: { value: 0.42 } },
     })
     const galvTex = bake(gl, {
       key: 'brushed:galvanized',
@@ -162,15 +162,19 @@ export function useStaticMaterials() {
     })
 
     const concrete = apply(new THREE.MeshStandardMaterial(), concreteTex)
-    const floor = apply(new THREE.MeshStandardMaterial({ envMapIntensity: 0.6 }), floorTex, 1)
+    const floor = apply(new THREE.MeshStandardMaterial({ envMapIntensity: 0.3 }), floorTex, 1)
     floor.normalScale.set(0.6, 0.6)
 
     const stainless = new THREE.MeshPhysicalMaterial({ metalness: 1, color: '#ffffff' })
     apply(stainless, steelTex)
+    // Revolved parts have no consistent tangent frame for brushed normals;
+    // the brushed look comes from the roughness map alone.
     stainless.aoMap = null
+    stainless.normalMap = null
 
     const galvanized = apply(new THREE.MeshStandardMaterial({ metalness: 1 }), galvTex)
     galvanized.aoMap = null
+    galvanized.normalMap = null
     const blackSteel = apply(new THREE.MeshStandardMaterial({ metalness: 0.55 }), blackTex)
     blackSteel.aoMap = null
 

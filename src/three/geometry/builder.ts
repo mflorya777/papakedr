@@ -49,6 +49,8 @@ export interface ExtrudeOptions {
   caps?: boolean
   /** Edges sharper than this (degrees) get split normals. */
   smoothAngle?: number
+  /** UVs for the end caps from loop coordinates; defaults to a planar map. */
+  capUV?: (a: number, b: number) => V2
 }
 
 /**
@@ -164,7 +166,7 @@ export class MeshBuilder {
         const Nn = norm(mapDir(B, nSign, 0, 0))
         const base = this.count
         for (const [x, y] of loop) {
-          const [u, v] = uvOf(x * (uS / vS), y)
+          const [u, v] = o.capUV ? o.capUV(x, y) : uvOf(x * (uS / vS), y)
           this.vertex(map(B, t, x, y), Nn, u, v)
         }
         for (const [a, b, c] of tris) this.tri(base + a, base + b, base + c)

@@ -69,8 +69,6 @@ export interface Layout {
   sEave: number
   openings: Opening[]
   chimney: { x: number; z: number } | null
-  /** Interior light sources for evening mode (window glow), world space. */
-  glow: V3[]
 }
 
 export function makeLayout(config: Config): Layout {
@@ -110,11 +108,7 @@ export function makeLayout(config: Config): Layout {
     if (wood) chimney = { x: nicheX + 0.02, z: 0.16 }
   }
 
-  const glow: V3[] = openings
-    .filter((o) => o.kind === 'window')
-    .map((o) => [o.c, o.y0 + o.h / 2, hw - 0.4] as V3)
-
-  return { config, L, frame, outer, eaveY, sEave, openings, chimney, glow }
+  return { config, L, frame, outer, eaveY, sEave, openings, chimney }
 }
 
 /** Frame of an opening on the cladding surface. */

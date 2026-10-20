@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Canvas, useThree } from '@react-three/fiber'
-import { CameraControls, Environment } from '@react-three/drei'
+import { CameraControls, Environment, Lightformer } from '@react-three/drei'
 import { Bloom, EffectComposer, N8AO, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
 import { suspend } from 'suspend-react'
@@ -14,13 +14,14 @@ import { makeLayout } from './models/layout'
 
 RectAreaLightUniformsLib.init()
 
-const hdriDay: Promise<{ default: string }> = import('@pmndrs/assets/hdri/park.exr')
+// CC0 HDRIs shipped as npm modules, so the configurator has no runtime CDN dependency.
+const hdriDay: Promise<{ default: string }> = import('@pmndrs/assets/hdri/studio.exr')
 const hdriEvening: Promise<{ default: string }> = import('@pmndrs/assets/hdri/sunset.exr')
 
 const MOODS = {
   day: {
-    background: '#e9e6e1',
-    env: 1.05,
+    background: '#e6e2db',
+    env: 0.5,
     sun: { position: [7, 10, 6] as const, intensity: 3.8, color: '#fff4e6' },
     fill: 0.25,
   },
@@ -46,18 +47,16 @@ function Floor() {
 
 function Lights({ mood }: { mood: SceneMood }) {
   const m = MOODS[mood]
-  const sun = useRef<THREE.DirectionalLight>(null)
   return (
     <>
       <directionalLight
-        ref={sun}
         position={m.sun.position}
         intensity={m.sun.intensity}
         color={m.sun.color}
         castShadow
         shadow-mapSize={[4096, 4096]}
-        shadow-bias={-0.0002}
-        shadow-normalBias={0.02}
+        shadow-bias={-0.0005}
+        shadow-normalBias={0.04}
         shadow-radius={6}
         shadow-camera-left={-7}
         shadow-camera-right={7}
@@ -79,7 +78,28 @@ function Env({ mood }: { mood: SceneMood }) {
       files={mood === 'day' ? day : evening}
       environmentIntensity={MOODS[mood].env}
       environmentRotation={[0, Math.PI / 3, 0]}
-    />
+    >
+      {/* Soft boxes around the horizon give metals and glass clean highlights. */}
+      {mood === 'day' && (
+        <group rotation={[0, 0.4, 0]}>
+          <Lightformer form="rect" intensity={1.1} position={[0, 7, 0]} rotation-x={Math.PI / 2} scale={[12, 12, 1]} />
+          {[0, 1, 2, 3, 4, 5].map((i) => {
+            const a = (i / 6) * Math.PI * 2
+            return (
+              <Lightformer
+                key={i}
+                form="rect"
+                intensity={i % 2 ? 0.5 : 1.1}
+                position={[Math.cos(a) * 9, 2, Math.sin(a) * 9]}
+                scale={[3, 16, 1]}
+                target={[0, 1.5, 0]}
+              />
+            )
+          })}
+          <Lightformer form="rect" intensity={0.5} color="#d9cfc1" position={[0, -3, 0]} rotation-x={-Math.PI / 2} scale={[20, 20, 1]} />
+        </group>
+      )}
+    </Environment>
   )
 }
 
@@ -153,10 +173,7 @@ export function Scene({ onReady }: { onReady: () => void }) {
       dpr={[1, 2]}
       camera={{ fov: 32, near: 0.1, far: 120, position: [8, 3, 8] }}
       gl={{ antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
-      onCreated={(state) => {
-        if (import.meta.env.DEV) (window as unknown as { __r3f: unknown }).__r3f = state
-        requestAnimationFrame(onReady)
-      }}
+      onCreated={() => requestAnimationFrame(onReady)}
     >
       <Background mood={mood} />
       <Lights mood={mood} />

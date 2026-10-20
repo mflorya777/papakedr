@@ -40,11 +40,11 @@ Wood wood(vec2 uv) {
     w.halo = max(w.halo, present * exp(-dist * dist / (r * r * 3.)));
   }
 
-  float warp = fbm(uv, vec2(3., 2.), 4) * 2.6 + gnoise(uv, vec2(14., 5.)) * .45;
+  float warp = fbm(uv, vec2(2., 1.), 5) * 4.2 + gnoise(uv, vec2(9., 3.)) * .55;
   float rc = uv.y * uRings + warp + bump;
   float r = fract(rc);
   float edge = .66 + .08 * gnoise(uv, vec2(40., 6.));
-  w.late = smoothstep(edge - .1, edge + .05, r) * (1. - smoothstep(.93, 1., r));
+  w.late = smoothstep(edge - .2, edge + .1, r) * (1. - smoothstep(.88, 1., r));
 
   w.fiber = gnoise(uv, vec2(48., 900.)) * .55 + gnoise(uv, vec2(112., 2048.)) * .45;
   w.pore = smoothstep(.5, .85, gnoise(uv, vec2(560., 2600.)));
@@ -61,8 +61,8 @@ float height(vec2 uv) {
 
 vec3 albedo(vec2 uv) {
   Wood w = wood(uv);
-  vec3 c = mix(uEarly, uLate, w.late * .9);
-  c *= 1. + .13 * w.fiber + .2 * w.tone;
+  vec3 c = mix(uEarly, uLate, w.late * .6);
+  c *= 1. + .06 * w.fiber + .22 * w.tone;
   c = mix(c, uLate, w.halo * .35);
   c = mix(c, uKnot * (.75 + .5 * w.late), w.knot * .92);
   c *= 1. - .35 * w.pore;

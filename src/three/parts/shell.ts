@@ -90,7 +90,7 @@ export function sweep(
       [s1, 1],
     ] as const) {
       const a = P.at(s)
-      // Tangent direction of increasing s in (z, y) is (-ny, nz) for this clockwise path... use finite difference.
+      // Cap normal: the path tangent, pointing away from the swept body.
       const a2 = P.at(s + 1e-4)
       let tz = a2.z - a.z
       let ty = a2.y - a.y
@@ -102,6 +102,23 @@ export function sweep(
       for (let i = 1; i < n - 1; i++) b.tri(base, base + i, base + i + 1)
     }
   }
+}
+
+/**
+ * Outline in (z, y) of an end-wall board spanning rows y0..y1, clipped by the
+ * profile P. A null z end follows the profile curve; a number cuts it square.
+ */
+function endBoardLoop(P: RoundedProfile, y0: number, y1: number, za: number | null, zb: number | null): V2[] {
+  const steps = 10
+  const ys = Array.from({ length: steps + 1 }, (_, k) => y0 + ((y1 - y0) * k) / steps)
+  const right = ys.map((y) => [zb ?? P.halfWidthAt(Math.min(Math.max(y, P.bottom + 1e-4), P.top - 1e-4)), y] as V2)
+  const left = ys.map((y) => [za ?? -P.halfWidthAt(Math.min(Math.max(y, P.bottom + 1e-4), P.top - 1e-4)), y] as V2)
+  const loop: V2[] = [...right, ...left.reverse()]
+  // Drop degenerate points where the curve pinches to zero width.
+  return loop.filter((p, i) => {
+    const q = loop[(i + 1) % loop.length]
+    return Math.hypot(p[0] - q[0], p[1] - q[1]) > 1e-5
+  })
 }
 
 /** Splits [a, b] by removing the given intervals. */
@@ -208,21 +225,31 @@ export function buildShell(bag: Bag, lay: Layout) {
     for (let i = 0; i < rows; i++) {
       const y0 = inner.bottom + i * rowPitch
       const y1 = y0 + rowPitch - BOARD_GAP
-      const hw = Math.min(inner.halfWidthAt(y0 + 0.001), inner.halfWidthAt(y1 - 0.001))
-      if (hw < 0.05) continue
+      if (Math.max(inner.halfWidthAt(y0 + 0.001), inner.halfWidthAt(y1 - 0.001)) < 0.06) continue
       const cuts: [number, number][] = []
       for (const o of doors) if (y1 > o.y0 && y0 < o.y0 + o.h) cuts.push([o.c - o.w / 2, o.c + o.w / 2])
       wood.tint = boardTint(r)
       const uOffset = r()
       const vOffset = r()
-      for (const [z0, z1] of subtract(-hw, hw, cuts)) {
-        // Extrude along z; the section lives in (x, y).
-        wood.board(z0, z1, Math.min(face, back), Math.max(face, back), y0, y1, { o: [0, 0, 0], e: [0, 0, 1], a: [1, 0, 0], b: [0, 1, 0] }, CHAMFER, {
-          uScale: TEX.wood[0],
-          vScale: TEX.wood[1],
+      const hwMax = Math.max(inner.halfWidthAt(y0 + 0.001), inner.halfWidthAt(y1 - 0.001), inner.halfWidthAt((y0 + y1) / 2))
+      for (const [z0, z1] of subtract(-hwMax, hwMax, cuts)) {
+        // Ends that reach the rim follow its curve; ends at the door are cut square.
+        const za = z0 <= -hwMax + 1e-6 ? null : z0
+        const zb = z1 >= hwMax - 1e-6 ? null : z1
+        const body = endBoardLoop(inner, y0, y1, za, zb)
+        const front = endBoardLoop(inner.offset(-CHAMFER), y0 + CHAMFER, y1 - CHAMFER, za === null ? null : za + CHAMFER, zb === null ? null : zb - CHAMFER)
+        const opts = {
+          uScale: TEX.wood[1],
+          vScale: TEX.wood[0],
           uOffset,
           vOffset,
-        })
+          swapUV: true,
+          smoothAngle: 20,
+          capUV: (z: number, y: number): V2 => [z / TEX.wood[0] + uOffset, y / TEX.wood[1] + vOffset],
+        }
+        // Body plus a slightly inset front layer, which reads as a chamfer.
+        wood.extrude(body, back, face - side * CHAMFER, alongX(), opts)
+        if (front.length > 2) wood.extrude(front, face - side * CHAMFER, face, alongX(), opts)
       }
     }
     wood.tint = [1, 1, 1]
