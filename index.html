@@ -7,10 +7,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="./assets/index-VV3wPCF0.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CoWcA2cj.css">
+    <script type="module" crossorigin src="./assets/index-iU6aHmlU.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-B7bJonQT.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div style="padding:32px;font:16px/1.5 sans-serif"><p id="boot-message">Загружаем конфигуратор «Папа Кедр»…</p><button onclick="location.reload()">Повторить загрузку</button><noscript>Для работы конфигуратора включите JavaScript.</noscript></div></div>
+    <script>
+      function showLoadError() {
+        var message = document.getElementById('boot-message');
+        if (message) message.textContent = 'Не удалось загрузить конфигуратор. Проверьте соединение и повторите загрузку. Если ссылка открыта в мессенджере, попробуйте обычный браузер.';
+      }
+      window.addEventListener('error', showLoadError, true);
+      window.addEventListener('unhandledrejection', showLoadError);
+    </script>
   </body>
 </html>
