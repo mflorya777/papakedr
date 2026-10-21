@@ -53,12 +53,12 @@ export interface ModelSpec {
 export const MODELS: Record<ModelId, ModelSpec> = {
   quadro: {
     id: 'quadro',
-    name: 'Квадро',
+    name: 'Баня бочка Квадро',
     subtitle: 'Стационарная баня-квадробочка',
     description:
       'Скруглённый корпус из строганой доски, вход с торца, мягкая кровля по всей дуге. Устанавливается на бетонные блоки с ложементами — без фундамента.',
     lengths: [3, 4, 5, 6],
-    basePrice: { 3: 295_000, 4: 355_000, 5: 425_000, 6: 495_000 },
+    basePrice: { 3: 280_000, 4: 340_000, 5: 410_000, 6: 480_000 },
     shell: { width: 2.2, height: 2.3, bottomRadius: 0.32, topRadius: 0.58, elevation: 0.42 },
     door: 'end',
     base: 'blocks',
@@ -76,12 +76,12 @@ export const MODELS: Record<ModelId, ModelSpec> = {
   },
   mobile: {
     id: 'mobile',
-    name: 'Мобиль',
+    name: 'Баня-прицеп',
     subtitle: 'Мобильная баня на прицепе',
     description:
       'Баня на двухосном прицепе: приезжает к воде или на участок готовой к работе. Вход сбоку, топка печи выведена наружу — дрова не заносятся в парную.',
     lengths: [4, 5],
-    basePrice: { 4: 545_000, 5: 615_000 },
+    basePrice: { 4: 280_000, 5: 350_000 },
     shell: { width: 2.0, height: 2.45, bottomRadius: 0.05, topRadius: 0.66, elevation: 0.66 },
     door: 'side',
     base: 'trailer',
