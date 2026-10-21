@@ -79,3 +79,16 @@ src/state.ts     состояние и синхронизация с адрес�
 src/three/       сцена, материалы, геометрия, детали моделей
 src/ui/          панель конфигуратора и форма заявки
 ```
+
+## Публикация
+
+Сайт публикуется на Cloudflare Pages: https://papakedr.pages.dev (если имя
+`papakedr` уже занято, Cloudflare выдаст адрес с суффиксом — он виден в логе
+деплоя). Workflow `.github/workflows/cloudflare-pages.yml` собирает проект и
+выкладывает `dist/` при каждом пуше в `main`.
+
+Нужны два секрета репозитория (Settings → Secrets and variables → Actions):
+
+- `CLOUDFLARE_ACCOUNT_ID` — ID аккаунта Cloudflare (Workers & Pages → правая панель);
+- `CLOUDFLARE_API_TOKEN` — API-токен с правом **Account → Cloudflare Pages → Edit**
+  (My Profile → API Tokens → Create Token).
