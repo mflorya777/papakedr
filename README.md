@@ -85,7 +85,8 @@ src/ui/          панель конфигуратора и форма заяв�
 Сайт публикуется на Cloudflare Pages: https://papakedr.pages.dev (если имя
 `papakedr` уже занято, Cloudflare выдаст адрес с суффиксом — он виден в логе
 деплоя). Workflow `.github/workflows/cloudflare-pages.yml` собирает проект и
-выкладывает `dist/` при каждом пуше в `main`.
+выкладывает `dist/` при каждом пуше в главную ветку
+(`claude/youthful-volta-5nu1zn`, а также `main`, если её заведут).
 
 Нужны два секрета репозитория (Settings → Secrets and variables → Actions):
 
